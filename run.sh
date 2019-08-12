@@ -39,6 +39,9 @@ run "kubectl create -f simple-nginx-pod.yaml"
 desc "[POD-USING-KUBECTL] kubectl is just a symantically richer wrapper over http"
 run "kubectl delete -f simple-nginx-pod.yaml"
 
+desc "============== SWITCH BACK TO SLIDES =============="
+read -s
+
 desc "[POD-WITH-CONTROLLER] Deployment controller spec"
 run "cat deployment-controller.yaml"
 
@@ -56,12 +59,41 @@ desc "[POD-WITH-CONTROLLER] Manually scale up"
 run "kubectl scale deployment.v1.apps/nginx-deployment --replicas=10"
 
 desc "[POD-WITH-CONTROLLER] Manually scale down" 
-run "kubectl scale deployment.v1.apps/nginx-deployment --replicas=1"
+run "kubectl scale deployment.v1.apps/nginx-deployment --replicas=5"
 
 DELETE_REPLICASET=$(kubectl get replicaset | grep nginx | head -n1 | awk '{print $1}')
 desc "[POD-WITH-CONTROLLER] Two level controllers"
 run "kubectl delete replicaset $DELETE_REPLICASET" 
 
+desc "============== SWITCH BACK TO SLIDES =============="
+read -s
+
+desc "[SVC example] How do we access a deployment that has > 1 replicas"
+run "kubectl expose deployment nginx-deployment --type=NodePort --name=example-service"
+
+desc "[SVC example] Dscribe svc" 
+run "kubectl describe svc example-service" 
+
+desc "[SVC example] Curl while true"
+run "cat ./curl_to_svc.py"
+
+desc "[SVC example] Curl while true"
+run "python ./curl_to_svc.py 1"
+
+desc "============== SWITCH BACK TO SLIDES =============="
+read -s
+
+desc "[HPA example] Allows scaling of pods based on metrics. Kubernetes uses metrics server to send metrics to API server"
+run "kubectl get pods -n kube-system"
+
+desc "[HPA example] To confirm things are configured correctly, use top"
+run "kubectl top pod --all-namespaces"
+
+desc "[HPA example] Curl while true"
+run "python ./curl_to_svc.py 1"
+
+desc "[HPA example] To confirm things are configured correctly, use top"
+run "kubectl top pod --all-namespaces"
 
 desc "Creates helm chart with the following contents"
 run "tree mychart"
@@ -69,3 +101,10 @@ run "tree mychart"
 desc "[CREATE HELM CHART]  helm create mychart " 
 desc "Creates helm chart with the following contents"
 run "tree mychart"
+
+desc "[TEARDOWN] delete deployment"
+run "kubectl delete deployments nginx-deployment"
+
+desc "[TEARDOWN] delete service"
+run "kubectl delete svc example-service"
+
