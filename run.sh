@@ -78,7 +78,10 @@ desc "[SVC example] Curl while true"
 run "cat ./curl_to_svc.py"
 
 desc "[SVC example] Curl while true"
-run "python ./curl_to_svc.py 1"
+run "python ./curl_to_svc.py 1 1"
+
+desc "[SVC example] IP tables"
+run "minikube ssh sudo iptables-save | grep KUBE-SVC"
 
 desc "============== SWITCH BACK TO SLIDES =============="
 read -s
@@ -89,8 +92,17 @@ run "kubectl get pods -n kube-system"
 desc "[HPA example] To confirm things are configured correctly, use top"
 run "kubectl top pod --all-namespaces"
 
-desc "[HPA example] Curl while true"
-run "python ./curl_to_svc.py 1"
+desc "[HPA example] Lets first scale down the deployment to 1 pod"
+run "kubectl scale deployment.v1.apps/nginx-deployment --replicas=1"
+
+desc "[HPA example] HPA controller spec"
+run "cat hpa.yaml"
+
+desc "[HPA example] HPA controller spec"
+run "kubectl create -f hpa.yaml"
+
+desc "[HPA example] Create load so that HPA tries to scale the deployment to match the load"
+run "python ./curl_to_svc.py 0 5"
 
 desc "[HPA example] To confirm things are configured correctly, use top"
 run "kubectl top pod --all-namespaces"
@@ -107,4 +119,7 @@ run "kubectl delete deployments nginx-deployment"
 
 desc "[TEARDOWN] delete service"
 run "kubectl delete svc example-service"
+
+desc "[TEARDOWN] delete hpa"
+run "kubectl delete hpa hpa-example"
 
