@@ -102,7 +102,7 @@ desc "[HPA example] HPA controller spec"
 run "kubectl create -f hpa.yaml"
 
 desc "[HPA example] Create load so that HPA tries to scale the deployment to match the load"
-run "python ./curl_to_svc.py 0 5"
+run "python ./curl_to_svc.py 0 3"
 
 desc "[HPA example] To confirm things are configured correctly, use top"
 run "kubectl top pod --all-namespaces"
