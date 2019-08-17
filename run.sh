@@ -5,11 +5,14 @@ DEMO_RUN_FAST=1
 
 clear
 
-export KUBECONFIG=/Users/puneet.gupta2/Downloads/35030/kubeconfig
-kubectl config use-context minikube
+export KUBECONFIG=~/.kube/config
+minikube update-context
 
 desc "[MINIKUBE] brew install minikube, then minikube start" 
 run "minikube status"  
+
+desc "[MINIKUBE] nodes in the cluster"
+run "kubectl get nodes"
 
 desc "[POD-USING-HTTP] Simple pod yaml (declarative, no mention of HOW only specifies WHAT)"
 run "cat simple-nginx-pod.yaml"
@@ -81,10 +84,16 @@ desc "[SVC example] Curl while true"
 run "python ./curl_to_svc.py 1 1"
 
 desc "[SVC example] IP tables"
-run "minikube ssh sudo iptables-save | grep KUBE-SVC"
+run "minikube ssh sudo iptables-save "
 
 desc "============== SWITCH BACK TO SLIDES =============="
 read -s
+
+desc "[HPA example] HPA controller spec"
+run "cat hpa.yaml"
+
+desc "[HPA example] HPA controller spec"
+run "kubectl create -f hpa.yaml"
 
 desc "[HPA example] Allows scaling of pods based on metrics. Kubernetes uses metrics server to send metrics to API server"
 run "kubectl get pods -n kube-system"
@@ -95,24 +104,14 @@ run "kubectl top pod --all-namespaces"
 desc "[HPA example] Lets first scale down the deployment to 1 pod"
 run "kubectl scale deployment.v1.apps/nginx-deployment --replicas=1"
 
-desc "[HPA example] HPA controller spec"
-run "cat hpa.yaml"
-
-desc "[HPA example] HPA controller spec"
-run "kubectl create -f hpa.yaml"
-
 desc "[HPA example] Create load so that HPA tries to scale the deployment to match the load"
 run "python ./curl_to_svc.py 0 3"
 
-desc "[HPA example] To confirm things are configured correctly, use top"
-run "kubectl top pod --all-namespaces"
+desc "[HPA example] HPA controller updates the deployment spec"
+run "kubectl describe deployment  | grep Replicas"
 
-desc "Creates helm chart with the following contents"
-run "tree mychart"
-
-desc "[CREATE HELM CHART]  helm create mychart " 
-desc "Creates helm chart with the following contents"
-run "tree mychart"
+desc "============== SWITCH BACK TO SLIDES =============="
+read -s
 
 desc "[TEARDOWN] delete deployment"
 run "kubectl delete deployments nginx-deployment"
@@ -123,3 +122,30 @@ run "kubectl delete svc example-service"
 desc "[TEARDOWN] delete hpa"
 run "kubectl delete hpa hpa-example"
 
+desc "============== SWITCH BACK TO SLIDES =============="
+read -s
+
+desc "[HELM] Contents of a helm chart"
+run "tree oldchart"
+
+desc "[HELM] Tiller is to helm as API server is to kubectl"
+run "kubectl get pods -n kube-system | grep tiller"
+
+
+desc "[HELM] Install a chart"
+run "helm install --name old ./mychart"
+
+desc "[HELM] List of charts"
+run "helm list"
+
+desc "[HELM] All resources installed by the chart"
+run "helm status old"
+
+desc "[HELM] Upgrade to new chart."
+desc "1. Adds a new deployment"
+desc "2. Removes an old deployment"
+desc "3. Updates number of replicas of existing deployement"
+run "helm upgrade old ./newchart"
+
+desc "[HELM] Rollback to old version"
+run "helm rollback old 0"
