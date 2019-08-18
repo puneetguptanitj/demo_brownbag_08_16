@@ -86,9 +86,6 @@ run "python ./curl_to_svc.py 1 1"
 desc "[SVC example] IP tables"
 run "minikube ssh sudo iptables-save "
 
-desc "============== SWITCH BACK TO SLIDES =============="
-read -s
-
 desc "[HPA example] HPA controller spec"
 run "cat hpa.yaml"
 
@@ -122,15 +119,17 @@ run "kubectl delete svc example-service"
 desc "[TEARDOWN] delete hpa"
 run "kubectl delete hpa hpa-example"
 
-desc "============== SWITCH BACK TO SLIDES =============="
-read -s
+desc "[HELM] Contents of a helm charts"
+run "tree oldchart newchart"
 
-desc "[HELM] Contents of a helm chart"
-run "tree oldchart"
+desc "[HELM] Difference between the two" 
+run "vimdiff oldchart/old.yaml newchart/new.yaml"
+
+desc "[HELM] Difference between the two" 
+run "vimdiff oldchart/existing.yaml newchart/existing.yaml"
 
 desc "[HELM] Tiller is to helm as API server is to kubectl"
 run "kubectl get pods -n kube-system | grep tiller"
-
 
 desc "[HELM] Install a chart"
 run "helm install --name old ./mychart"
