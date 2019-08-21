@@ -112,17 +112,17 @@ dry_run 'curl -H "Content-type:application/json"
                --key  /Users/puneet.gupta2/.minikube/client.key'
 curl -H 'Content-type:application/json' https://$MASTER_IP:8443/apis/metrics.k8s.io/v1beta1/namespaces/default/pods?labelSelector=app%3Dnginx --cacert  /Users/puneet.gupta2/.minikube/ca.crt --cert  /Users/puneet.gupta2/.minikube/client.crt --key  /Users/puneet.gupta2/.minikube/client.key
 
-desc "[HPA example] HPA controller spec"
-run "cat hpa.yaml"
-
-desc "[HPA example] HPA controller spec"
-run "kubectl create -f hpa.yaml"
-
 desc "[HPA example] Allows scaling of pods based on metrics. Kubernetes uses metrics server to send metrics to API server"
 run "kubectl get pods -n kube-system"
 
 desc "[HPA example] To confirm things are configured correctly, use top"
 run "kubectl top pod --all-namespaces"
+
+desc "[HPA example] HPA controller spec"
+run "cat hpa.yaml"
+
+desc "[HPA example] HPA controller spec"
+run "kubectl create -f hpa.yaml"
 
 desc "[HPA example] Lets first scale down the deployment to 1 pod"
 run "kubectl scale deployment.v1.apps/nginx-deployment --replicas=1"
@@ -148,18 +148,18 @@ desc "[TEARDOWN] delete hpa"
 run "kubectl delete hpa hpa-example"
 
 desc "[HELM] Contents of a helm charts"
-dry_run "tree oldchart newchart"
-tree oldchart newchart
+dry_run "tree oldchart "
+tree oldchart 
 
-desc "[HELM] Difference between the two" 
-dry_run "vimdiff oldchart/templates/old.yaml newchart/templates/new.yaml"
-vimdiff oldchart/templates/old.yaml newchart/templates/new.yaml
+desc "[HELM] Contents of a helm charts"
+dry_run "vi oldchart/templates/old.yaml"
+vi oldchart/templates/old.yaml
 
-desc "[HELM] Difference between the two" 
-dry_run "vimdiff oldchart/templates/existing.yaml newchart/templates/existing.yaml"
-vimdiff oldchart/templates/existing.yaml newchart/templates/existing.yaml
+desc "[HELM] Contents of a helm charts"
+dry_run "vi oldchart/values.yaml"
+vi oldchart/values.yaml
 
-desc "[HELM] Tiller is to helm as API server is to kubectl"
+desc "[HELM ] Tiller is to helm as API server is to kubectl"
 dry_run "kubectl get pods -n kube-system | grep tiller"
 kubectl get pods -n kube-system | grep tiller
 
@@ -172,13 +172,25 @@ run "helm list"
 desc "[HELM] All resources installed by the chart"
 run "helm status old"
 
-desc "[HELM] Upgrade to new chart."
+desc "[HELM UPGRADE] Contents of a helm charts"
+dry_run "tree oldchart newchart"
+tree oldchart newchart
+
+desc "[HELM UPGRADE] Difference between the two" 
+dry_run "vimdiff oldchart/templates/old.yaml newchart/templates/new.yaml"
+vimdiff oldchart/templates/old.yaml newchart/templates/new.yaml
+
+desc "[HELM UPGRADE] Difference between the two" 
+dry_run "vimdiff oldchart/templates/existing.yaml newchart/templates/existing.yaml"
+vimdiff oldchart/templates/existing.yaml newchart/templates/existing.yaml
+
+desc "[HELM UPGRADE] Upgrade to new chart."
 desc "1. Adds a new deployment"
 desc "2. Removes an old deployment"
 desc "3. Updates number of replicas of existing deployement"
 run "helm upgrade old ./newchart"
 
-desc "[HELM] Rollback to old version"
+desc "[HELM ROLLBACK] Rollback to old version"
 run "helm rollback old 0"
 
 desc "[TEARDOWN] Remove helm charts"
@@ -200,3 +212,4 @@ run "python ./curl_zdt_test.py 0.5 1"
 desc "[TEARDOWN] Cleanup"
 run "kubectl delete deployment zdt-deployment"
 
+desc "[END] Thanks!!"
