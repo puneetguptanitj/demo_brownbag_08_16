@@ -3,10 +3,16 @@
 DEMO_RUN_FAST=1
 . utils.sh
 
-clear
-
+function figlet_string(){
+   read -s
+   clear
+   figlet $1
+}
 export KUBECONFIG=~/.kube/config
 minikube update-context
+MASTER_IP=$(minikube ip)
+
+figlet_string "Minikube"
 
 desc "[MINIKUBE] brew install minikube, then minikube start" 
 run "minikube status"  
@@ -14,13 +20,15 @@ run "minikube status"
 desc "[MINIKUBE] nodes in the cluster"
 run "kubectl get nodes"
 
-desc "[POD-USING-HTTP] Simple pod yaml (declarative, no mention of HOW only specifies WHAT)"
-run "cat simple-nginx-pod.yaml"
+
+figlet_string "Pods"
 
 desc "[POD-USING-HTTP] API server IP"
 run "minikube ip"
 
-MASTER_IP=$(minikube ip)
+desc "[POD-USING-HTTP] Simple pod yaml (declarative, no mention of HOW only specifies WHAT)"
+run "cat simple-nginx-pod.yaml"
+
  
 desc "[POD-USING-HTTP] Pod creation is essentially an HTTP POST" 
 dry_run "curl -X POST --data-binary @simple-nginx-pod.yaml 
@@ -49,6 +57,8 @@ run "kubectl delete -f simple-nginx-pod.yaml"
 desc "============== SWITCH BACK TO SLIDES =============="
 read -s
 
+figlet_string "Controllers"
+
 desc "[POD-WITH-CONTROLLER] Deployment controller spec"
 run "cat deployment-controller.yaml"
 
@@ -75,6 +85,8 @@ run "kubectl delete replicaset $DELETE_REPLICASET"
 desc "============== SWITCH BACK TO SLIDES =============="
 read -s
 
+figlet_string "Services"
+
 desc "[SVC example] How do we access a deployment that has > 1 replicas"
 run "kubectl expose deployment nginx-deployment --type=NodePort --name=example-service"
 
@@ -89,6 +101,8 @@ run "python ./curl_to_svc.py 1 1"
 
 desc "[SVC example] IP tables"
 run "minikube ssh sudo iptables-save "
+
+figlet_string "HPA"
 
 desc "[HPA example] Get metrics, Kubelet summary API"
 desc "[HPA example] Node level stats"
@@ -147,6 +161,9 @@ run "kubectl delete svc example-service"
 desc "[TEARDOWN] delete hpa"
 run "kubectl delete hpa hpa-example"
 
+
+figlet_string "Helm"
+
 desc "[HELM] Contents of a helm charts"
 dry_run "tree oldchart "
 tree oldchart 
@@ -196,6 +213,8 @@ run "helm rollback old 0"
 desc "[TEARDOWN] Remove helm charts"
 run "helm delete old --purge"
 
+figlet_string "ZDT"
+
 desc "[ZDT] ZDT Upgrade using Deployment object's rolling upgrade feature"
 run "cat  zdt_v1.yaml"
 
@@ -212,4 +231,4 @@ run "python ./curl_zdt_test.py 0.5 1"
 desc "[TEARDOWN] Cleanup"
 run "kubectl delete deployment zdt-deployment"
 
-desc "[END] Thanks!!"
+figlet_string "Thanks!!"
