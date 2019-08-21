@@ -20,7 +20,7 @@ color_map={}
 
 def send_request ():
 	master_ip=os.popen("minikube ip").read().strip()
-	svc_port=os.popen("kubectl get svc example-service -o json | jq '.spec.ports | .[] | .nodePort'").read().strip()
+	svc_port=os.popen("kubectl get svc zdt-service -o json | jq '.spec.ports | .[] | .nodePort'").read().strip()
 	sleep_time=sys.argv[1]
     	global shouldExit
 	while not shouldExit:

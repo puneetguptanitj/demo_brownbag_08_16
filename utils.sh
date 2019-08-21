@@ -64,6 +64,20 @@
  #    return $r
  }
 
+ function dry_run() { 
+     maybe_first_prompt
+     rate=35
+     if [ -n "$DEMO_RUN_FAST" ]; then
+       rate=1000
+     fi
+     printf "$yellow\$ $green$1$reset" | pv -qL $rate
+     if [ -n "$DEMO_RUN_FAST" ]; then
+       sleep 0.5
+     fi
+     read -s
+     printf "\n"
+ }
+
  function relative() {
      for arg; do
          echo "$(realpath $(dirname $(which $0)))/$arg" | sed "s|$(realpath $(pwd))|.|"

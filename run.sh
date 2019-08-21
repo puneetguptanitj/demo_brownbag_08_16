@@ -23,18 +23,22 @@ run "minikube ip"
 MASTER_IP=$(minikube ip)
  
 desc "[POD-USING-HTTP] Pod creation is essentially an HTTP POST" 
-COMMAND="curl -X POST --data-binary @simple-nginx-pod.yaml -H 'Content-type:application/yaml' https://$MASTER_IP:8443/api/v1/namespaces/default/pods --cacert  /Users/puneet.gupta2/.minikube/ca.crt --cert  /Users/puneet.gupta2/.minikube/client.crt --key  /Users/puneet.gupta2/.minikube/client.key " 
-desc "$COMMAND"
-read -s
-eval $COMMAND
+dry_run "curl -X POST --data-binary @simple-nginx-pod.yaml 
+              -H 'Content-type:application/yaml' 
+               https://$MASTER_IP:8443/api/v1/namespaces/default/pods
+               --cacert  /Users/puneet.gupta2/.minikube/ca.crt
+               --cert  /Users/puneet.gupta2/.minikube/client.crt
+               --key  /Users/puneet.gupta2/.minikube/client.key " 
+curl -X POST --data-binary @simple-nginx-pod.yaml -H 'Content-type:application/yaml' https://$MASTER_IP:8443/api/v1/namespaces/default/pods --cacert  /Users/puneet.gupta2/.minikube/ca.crt --cert  /Users/puneet.gupta2/.minikube/client.crt --key  /Users/puneet.gupta2/.minikube/client.key
+printf "\n"
 
 desc "[POD-USING-HTTP] Pod deletion"
-COMMAND="curl -X DELETE https://$MASTER_IP:8443/api/v1/namespaces/default/pods/nginx --cacert  /Users/puneet.gupta2/.minikube/ca.crt --cert  /Users/puneet.gupta2/.minikube/client.crt --key  /Users/puneet.gupta2/.minikube/client.key "
-
-desc "$COMMAND"
-read -s
-eval $COMMAND
-sleep 3
+dry_run "curl -X DELETE https://$MASTER_IP:8443/api/v1/namespaces/default/pods/nginx
+              --cacert  /Users/puneet.gupta2/.minikube/ca.crt
+              --cert  /Users/puneet.gupta2/.minikube/client.crt
+              --key  /Users/puneet.gupta2/.minikube/client.key "
+curl -X DELETE https://$MASTER_IP:8443/api/v1/namespaces/default/pods/nginx --cacert  /Users/puneet.gupta2/.minikube/ca.crt --cert  /Users/puneet.gupta2/.minikube/client.crt --key  /Users/puneet.gupta2/.minikube/client.key
+printf "\n"
 
 desc "[POD-USING-KUBECTL] kubectl is just a symantically richer wrapper over http"
 run "kubectl create -f simple-nginx-pod.yaml"
@@ -86,6 +90,28 @@ run "python ./curl_to_svc.py 1 1"
 desc "[SVC example] IP tables"
 run "minikube ssh sudo iptables-save "
 
+desc "[HPA example] Get metrics, Kubelet summary API"
+desc "[HPA example] Node level stats"
+dry_run "minikube ssh 'curl http://localhost:10255/stats/summary' | jq .node | jq keys"
+minikube ssh 'curl http://localhost:10255/stats/summary' | jq .node | jq keys
+
+desc "[HPA example] Get metrics, Kubelet summary API"
+desc "[HPA example] Pod level stats"
+dry_run "minikube ssh 'curl http://localhost:10255/stats/summary' | jq .pods | jq .[1] | jq keys"
+minikube ssh 'curl http://localhost:10255/stats/summary' | jq .pods | jq .[1] | jq keys
+
+desc "[HPA example] Metrics server, api group"
+dry_run "kubectl get --raw "/apis" | jq | tail -n 30"
+kubectl get --raw "/apis" | jq | tail -n 30
+
+desc "[HPA example] Metrics server, summary aggregator"
+dry_run 'curl -H "Content-type:application/json"
+               https://$MASTER_IP:8443/apis/metrics.k8s.io/v1beta1/namespaces/default/pods?labelSelector=app%%3Dnginx
+               -cacert  /Users/puneet.gupta2/.minikube/ca.crt
+               --cert  /Users/puneet.gupta2/.minikube/client.crt
+               --key  /Users/puneet.gupta2/.minikube/client.key'
+curl -H 'Content-type:application/json' https://$MASTER_IP:8443/apis/metrics.k8s.io/v1beta1/namespaces/default/pods?labelSelector=app%3Dnginx --cacert  /Users/puneet.gupta2/.minikube/ca.crt --cert  /Users/puneet.gupta2/.minikube/client.crt --key  /Users/puneet.gupta2/.minikube/client.key
+
 desc "[HPA example] HPA controller spec"
 run "cat hpa.yaml"
 
@@ -104,8 +130,10 @@ run "kubectl scale deployment.v1.apps/nginx-deployment --replicas=1"
 desc "[HPA example] Create load so that HPA tries to scale the deployment to match the load"
 run "python ./curl_to_svc.py 0 3"
 
+
 desc "[HPA example] HPA controller updates the deployment spec"
-run "kubectl describe deployment  | grep Replicas"
+dry_run "kubectl describe deployment | grep Replicas"
+kubectl describe deployment | grep Replicas
 
 desc "============== SWITCH BACK TO SLIDES =============="
 read -s
@@ -120,19 +148,23 @@ desc "[TEARDOWN] delete hpa"
 run "kubectl delete hpa hpa-example"
 
 desc "[HELM] Contents of a helm charts"
-run "tree oldchart newchart"
+dry_run "tree oldchart newchart"
+tree oldchart newchart
 
 desc "[HELM] Difference between the two" 
-run "vimdiff oldchart/old.yaml newchart/new.yaml"
+dry_run "vimdiff oldchart/templates/old.yaml newchart/templates/new.yaml"
+vimdiff oldchart/templates/old.yaml newchart/templates/new.yaml
 
 desc "[HELM] Difference between the two" 
-run "vimdiff oldchart/existing.yaml newchart/existing.yaml"
+dry_run "vimdiff oldchart/templates/existing.yaml newchart/templates/existing.yaml"
+vimdiff oldchart/templates/existing.yaml newchart/templates/existing.yaml
 
 desc "[HELM] Tiller is to helm as API server is to kubectl"
-run "kubectl get pods -n kube-system | grep tiller"
+dry_run "kubectl get pods -n kube-system | grep tiller"
+kubectl get pods -n kube-system | grep tiller
 
 desc "[HELM] Install a chart"
-run "helm install --name old ./mychart"
+run "helm install --name old ./oldchart"
 
 desc "[HELM] List of charts"
 run "helm list"
@@ -148,3 +180,23 @@ run "helm upgrade old ./newchart"
 
 desc "[HELM] Rollback to old version"
 run "helm rollback old 0"
+
+desc "[TEARDOWN] Remove helm charts"
+run "helm delete old --purge"
+
+desc "[ZDT] ZDT Upgrade using Deployment object's rolling upgrade feature"
+run "cat  zdt_v1.yaml"
+
+desc "[ZDT] Deployment that we would be upgrading it to"
+dry_run "vimdiff zdt_v1.yaml zdt_v2.yaml"
+vimdiff zdt_v1.yaml zdt_v2.yaml
+
+desc "[ZDT] Deploy v1"
+run "kubectl apply -f zdt_v1.yaml"
+
+desc "[ZDT] Simulate clients using the service continuously"
+run "python ./curl_zdt_test.py 0.5 1"
+
+desc "[TEARDOWN] Cleanup"
+run "kubectl delete deployment zdt-deployment"
+

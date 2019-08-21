@@ -1,0 +1,27 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: zdt-deployment
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1 
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 20 
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: stenote/nginx-hostname 
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 5m
