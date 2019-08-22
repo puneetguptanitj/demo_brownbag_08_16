@@ -41,18 +41,20 @@ curl -X POST --data-binary @simple-nginx-pod.yaml -H 'Content-type:application/y
 printf "\n"
 
 desc "[POD-USING-HTTP] Pod deletion"
-dry_run "curl -X DELETE https://$MASTER_IP:8443/api/v1/namespaces/default/pods/nginx
+dry_run "curl -X DELETE  https://$MASTER_IP:8443/api/v1/namespaces/default/pods/nginx
               --cacert  /Users/puneet.gupta2/.minikube/ca.crt
               --cert  /Users/puneet.gupta2/.minikube/client.crt
               --key  /Users/puneet.gupta2/.minikube/client.key "
-curl -X DELETE https://$MASTER_IP:8443/api/v1/namespaces/default/pods/nginx --cacert  /Users/puneet.gupta2/.minikube/ca.crt --cert  /Users/puneet.gupta2/.minikube/client.crt --key  /Users/puneet.gupta2/.minikube/client.key
+curl -X DELETE  -H 'Content-type:application/yaml' https://$MASTER_IP:8443/api/v1/namespaces/default/pods/nginx --cacert  /Users/puneet.gupta2/.minikube/ca.crt --cert  /Users/puneet.gupta2/.minikube/client.crt --key  /Users/puneet.gupta2/.minikube/client.key -d '{"gracePeriodSeconds":1,"propagationPolicy":"Background"}'
 printf "\n"
 
 desc "[POD-USING-KUBECTL] kubectl is just a symantically richer wrapper over http"
 run "kubectl create -f simple-nginx-pod.yaml"
 
 desc "[POD-USING-KUBECTL] kubectl is just a symantically richer wrapper over http"
-run "kubectl delete -f simple-nginx-pod.yaml"
+dry_run "kubectl delete -f simple-nginx-pod.yaml" 
+kubectl delete -f simple-nginx-pod.yaml --grace-period=0
+printf "\n"
 
 desc "============== SWITCH BACK TO SLIDES =============="
 read -s
@@ -137,6 +139,9 @@ run "cat hpa.yaml"
 
 desc "[HPA example] HPA controller spec"
 run "kubectl create -f hpa.yaml"
+
+desc "[HPA example] Describe HPA"
+run "kubectl describe hpa hpa-example"
 
 desc "[HPA example] Lets first scale down the deployment to 1 pod"
 run "kubectl scale deployment.v1.apps/nginx-deployment --replicas=1"
@@ -230,5 +235,8 @@ run "python ./curl_zdt_test.py 0.5 1"
 
 desc "[TEARDOWN] Cleanup"
 run "kubectl delete deployment zdt-deployment"
+
+desc "[TEARDOWN] Cleanup"
+run "kubectl delete service zdt-service"
 
 figlet_string "Thanks!!"
