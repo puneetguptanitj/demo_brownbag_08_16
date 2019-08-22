@@ -53,7 +53,7 @@ run "kubectl create -f simple-nginx-pod.yaml"
 
 desc "[POD-USING-KUBECTL] kubectl is just a symantically richer wrapper over http"
 dry_run "kubectl delete -f simple-nginx-pod.yaml" 
-kubectl delete -f simple-nginx-pod.yaml --grace-period=0
+kubectl delete -f simple-nginx-pod.yaml --grace-period=0 --wait=false
 printf "\n"
 
 desc "============== SWITCH BACK TO SLIDES =============="
@@ -193,6 +193,10 @@ run "helm list"
 
 desc "[HELM] All resources installed by the chart"
 run "helm status old"
+
+
+desc "============== SWITCH BACK TO SLIDES =============="
+read -s
 
 desc "[HELM UPGRADE] Contents of a helm charts"
 dry_run "tree oldchart newchart"
